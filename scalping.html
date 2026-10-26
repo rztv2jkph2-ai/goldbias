@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GoldBias Scalp</title>
+<style>
+:root{
+  --bg:#050912; --card:#0b1422; --line:#17263a; --txt:#e8eef7; --mut:#6f8099;
+  --buy:#3ddc97; --sell:#ff5c6c; --blue:#5ec8ff; --gold:#e8b84a; --warn:#ffb020;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(circle at 50% -10%,#0f2236,var(--bg) 55%);color:var(--txt);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;
+  padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+a{color:var(--blue);text-decoration:none}
+header{display:flex;align-items:center;gap:10px;padding:16px 0}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+.brand{font-weight:700;font-size:20px}.brand b{color:var(--blue)}
+.badge{margin-left:auto;border:1px solid var(--buy);color:var(--buy);border-radius:99px;padding:5px 12px;font-size:11px;letter-spacing:.1em}
+.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin:4px 0 18px}
+.tabs button{flex:1;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.tabs button.on{background:#13243a;color:var(--txt)}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px}
+.mut{color:var(--mut);font-size:13px}
+.buy{color:var(--buy)}.sell{color:var(--sell)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sec{font-size:15px;color:var(--mut);margin:20px 4px 10px}
+.lbl{font-size:11px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
+.clock{font-size:34px;font-weight:800;margin:6px 0 12px}
+.sess{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%;background:#2a3a50}
+.sess.on .dot{background:var(--buy);box-shadow:0 0 8px var(--buy)}
+.sess.on b{color:var(--txt)}.sess b{color:var(--mut);font-weight:600}
+.sess span{margin-left:auto;font-size:12px;color:var(--mut)}
+.hint{margin-top:10px;font-size:13px;padding:10px 12px;border-radius:12px;background:#0a111d;border:1px solid var(--line);color:#b9c6d8}
+.hint.hot{border-color:#1c5a43;background:#0d2a21;color:var(--buy)}
+.news{border-color:#1e4766}
+.news.warn{border-color:#7a5410;background:#1c1507}
+.news.warn .pill{border-color:#7a5410;background:#2a1d08;color:var(--warn)}
+.pill{border:1px solid #1e4766;background:#0d2236;color:var(--blue);border-radius:99px;padding:6px 12px;font-size:13px}
+.news h3{font-size:20px;margin:12px 0 4px}
+.sig .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sig .side{font-size:26px;font-weight:800}
+.st{font-size:11px;letter-spacing:.1em;padding:5px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.st.active{color:var(--buy);border-color:#1c5a43;background:#0d2a21}
+.st.wait{color:var(--warn);border-color:#7a5410;background:#2a1d08}
+.lv{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mini{border:1px solid var(--line);border-radius:14px;padding:10px 4px;background:#0a111d;text-align:center}
+.mini small{display:block;font-size:10px;letter-spacing:.1em;color:var(--mut);margin-bottom:5px}
+.mini b{font-size:16px;display:block}
+.mini i{display:block;font-style:normal;font-size:10px;color:var(--mut);margin-top:3px}
+.mini.tp b{color:var(--buy)}.mini.sl b{color:var(--sell)}
+.sig .note{margin-top:12px;font-size:14px}
+.sig .meta{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}
+.empty{text-align:center;color:var(--mut);padding:28px 10px;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 6px;text-align:center}
+.stat b{display:block;font-size:26px}.stat small{font-size:11px;letter-spacing:.12em;color:var(--mut)}
+.h{display:flex;justify-content:space-between;align-items:center}
+.h .dt{font-size:13px;color:var(--mut)}.h .sd{font-size:22px;font-weight:800;margin-top:4px}
+.h .r{display:flex;align-items:center;gap:14px;text-align:right}
+.h .p{font-size:24px;font-weight:700}.h .p small{display:block;font-size:11px;color:var(--mut);letter-spacing:.12em}
+.chk{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#04130c}
+.chk.tp{background:var(--buy)}.chk.sl{background:var(--sell);color:#1a0508}.chk.be{background:#2a3a50;color:var(--txt)}
+label{display:block;font-size:12px;letter-spacing:.1em;color:var(--mut);margin:12px 0 6px;text-transform:uppercase}
+input{width:100%;background:#0a111d;border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--txt);font-size:17px;outline:none}
+input:focus{border-color:var(--blue)}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.res .mini b{font-size:22px;color:var(--blue)}
+footer{text-align:center;margin-top:30px;color:var(--mut);font-size:12px;line-height:1.7}
+footer b{font-size:16px;color:#9fb0c6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5ec8ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 4 14 12 14 11 22 20 10 12 10 13 2"/></svg>
+  </div>
+  <div class="brand">Gold<b>Bias</b> Scalp</div>
+  <div class="badge mono">SCALPING</div>
+</header>
+
+<nav class="tabs">
+  <button class="on" data-v="live">Live</button>
+  <button data-v="hist">History</button>
+  <button data-v="calc">Calc</button>
+</nav>
+
+<!-- LIVE -->
+<section id="live" class="view on">
+  <div class="card">
+    <div class="lbl mono">Waktu Lokal (WITA)</div>
+    <div class="clock mono" id="clock">--:--:--</div>
+    <div id="sessions"></div>
+    <div class="hint" id="sessHint"></div>
+  </div>
+
+  <div class="card news" id="newsCard">
+    <div class="row">
+      <span class="lbl mono">news guard</span>
+      <span class="pill mono" id="newsCd">--</span>
+    </div>
+    <h3 id="newsName"></h3>
+    <div class="mut" id="newsLabel"></div>
+    <div class="hint" id="newsHint"></div>
+  </div>
+
+  <div class="sec">Signal Scalping</div>
+  <div id="signals"></div>
+</section>
+
+<!-- HISTORY -->
+<section id="hist" class="view">
+  <div class="sec" style="margin-top:0;color:var(--txt);font-size:18px">Scalping Signal History</div>
+  <p class="mut" style="margin:0 4px 14px">Riwayat win/loss. Break-even tidak dihitung ke win rate.</p>
+  <div class="stats" id="stats"></div>
+  <div id="list"></div>
+</section>
+
+<!-- CALC -->
+<section id="calc" class="view">
+  <div class="sec" style="margin-top:0;color:var(--txt);font-size:18px">Kalkulator Lot XAUUSD</div>
+  <div class="card">
+    <label>Saldo (USD)</label>
+    <input id="cBal" type="number" inputmode="decimal" value="1000">
+    <label>Risiko per trade (%)</label>
+    <input id="cRisk" type="number" inputmode="decimal" value="1">
+    <label>Jarak SL (pips)</label>
+    <input id="cSl" type="number" inputmode="decimal" value="50">
+    <div class="res mono">
+      <div class="mini"><small>RISIKO (USD)</small><b id="rUsd">-</b></div>
+      <div class="mini"><small>LOT</small><b id="rLot">-</b></div>
+    </div>
+    <div class="hint">Asumsi: 1 pip = 0.1 harga, 1 lot = 100 oz (≈ $10 per pip per 1 lot). Cek spesifikasi kontrak di brokermu.</div>
+  </div>
+</section>
+
+<footer>
+  <b>Gold<span style="color:var(--blue)">Bias</span> Scalp</b><br>
+  <span class="mono">Fast Setups &amp; Session Tracker</span><br>
+  <a href="index.html">← Kembali ke Swing</a><br>
+  Signal bukan nasihat keuangan. Trading berisiko tinggi.
+</footer>
+
+<script>
+/* ============ EDIT DATA DI SINI ============ */
+const CONFIG = {
+  // Berita penting berikutnya (untuk news guard)
+  news: {
+    name: "Federal Reserve Rate Decision",
+    date: "2026-10-29T02:00:00+08:00",
+    label: "Thursday, 29 October 2026 · 02:00 (GMT+8)"
+  },
+  // status: "active" (sudah entry), "wait" (tunggu harga), "closed" (sembunyikan)
+  signals: [
+    {
+      side: "BUY", status: "wait",
+      entry: 4069.5, tp1: 4074.5, tp2: 4079.5, sl: 4064.5,
+      note: "Buy area retest. Tunggu harga masuk zona, jangan kejar.",
+      time: "26 Okt 2026 · 15:40"
+    }
+  ],
+  // status: "tp" (profit), "sl" (loss), "be" (break-even). pips angka positif.
+  history: [
+    { date:"26 Okt 2026", side:"BUY",  pips:50, status:"tp" },
+    { date:"26 Okt 2026", side:"SELL", pips:40, status:"sl" },
+    { date:"25 Okt 2026", side:"SELL", pips:0,  status:"be" }
+  ]
+};
+/* ============================================ */
+
+const $ = id => document.getElementById(id);
+const cls = s => s.toUpperCase()==="BUY" ? "buy" : "sell";
+const pips = (a,b) => Math.round(Math.abs(a-b)*10);   // 1 pip = 0.1
+const p2 = n => String(n).padStart(2,"0");
+
+// Tabs
+document.querySelectorAll(".tabs button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));
+    document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); $(b.dataset.v).classList.add("on");
+    window.scrollTo({top:0});
+  };
+});
+
+/* ---------- Sesi & jam ---------- */
+const SESS = [                       // jam UTC (perkiraan, tanpa DST)
+  {n:"Asia",     s:0,  e:9},
+  {n:"London",   s:7,  e:16},
+  {n:"New York", s:12, e:21}
+];
+const WITA = 8;
+const inRange = (h,s,e) => h>=s && h<e;
+
+function renderClock(){
+  const now = new Date();
+  $("clock").textContent = now.toLocaleTimeString("id-ID",{timeZone:"Asia/Makassar",hour12:false});
+  const h = now.getUTCHours() + now.getUTCMinutes()/60;
+  const act = SESS.map(x => inRange(h,x.s,x.e));
+  $("sessions").innerHTML = SESS.map((x,i)=>`
+    <div class="sess ${act[i]?"on":""}">
+      <i class="dot"></i><b>${x.n}</b>
+      <span class="mono">${p2((x.s+WITA)%24)}:00–${p2((x.e+WITA)%24)}:00 WITA</span>
+    </div>`).join("");
+  const hint = $("sessHint");
+  if(act[1] && act[2]){
+    hint.className="hint hot";
+    hint.textContent="Overlap London–New York aktif: volatilitas dan likuiditas tertinggi, jam terbaik untuk scalping.";
+  } else if(act.some(Boolean)){
+    hint.className="hint";
+    hint.textContent="Sesi aktif: " + SESS.filter((x,i)=>act[i]).map(x=>x.n).join(" + ") + ".";
+  } else {
+    hint.className="hint";
+    hint.textContent="Pasar sepi di luar sesi utama. Spread bisa melebar, hati-hati.";
+  }
+}
+renderClock(); setInterval(renderClock,1000);
+
+/* ---------- News guard ---------- */
+const N = CONFIG.news;
+$("newsName").textContent = N.name;
+$("newsLabel").textContent = N.label;
+function renderNews(){
+  const diff = new Date(N.date) - new Date();       // ms
+  const min = diff/6e4;
+  const card = $("newsCard"), hint = $("newsHint"), cd = $("newsCd");
+  card.classList.remove("warn");
+  if(diff>0){
+    const dd=Math.floor(diff/864e5), hh=Math.floor(diff%864e5/36e5), mm=Math.floor(diff%36e5/6e4), ss=Math.floor(diff%6e4/1e3);
+    cd.textContent = `${dd}d ${p2(hh)}h ${p2(mm)}m ${p2(ss)}s`;
+  } else cd.textContent = "Sudah rilis";
+  if(min>0 && min<=30){
+    card.classList.add("warn");
+    hint.textContent="⚠ News kurang dari 30 menit. Hindari entry baru dan lebarkan atau tutup posisi terbuka.";
+  } else if(min<=0 && min>-15){
+    card.classList.add("warn");
+    hint.textContent="⚠ News baru rilis. Spread dan slippage tinggi, tunggu candle stabil.";
+  } else if(min>30 && min<=120){
+    hint.textContent="News dalam 2 jam. Siapkan rencana, jangan tahan scalp melewati rilis.";
+  } else {
+    hint.textContent="Tidak ada news besar dalam waktu dekat.";
+  }
+}
+renderNews(); setInterval(renderNews,1000);
+
+/* ---------- Signal live ---------- */
+(function(){
+  const list = CONFIG.signals.filter(s=>s.status!=="closed");
+  if(!list.length){
+    $("signals").innerHTML = `<div class="card empty">Belum ada setup scalping. Signal diposting hanya saat setup berkualitas muncul.</div>`;
+    return;
+  }
+  $("signals").innerHTML = list.map(s=>{
+    const slP = pips(s.entry,s.sl), t1 = pips(s.entry,s.tp1), t2 = pips(s.entry,s.tp2);
+    const rr = slP ? (t1/slP).toFixed(1) : "-";
+    const stCls = s.status==="active" ? "active" : "wait";
+    const stTxt = s.status==="active" ? "AKTIF" : "MENUNGGU ENTRY";
+    return `
+    <div class="card sig">
+      <div class="top">
+        <div class="side ${cls(s.side)}">${s.side.toUpperCase()}</div>
+        <span class="st mono ${stCls}">${stTxt}</span>
+      </div>
+      <div class="lv mono">
+        <div class="mini"><small>ENTRY</small><b>${s.entry}</b></div>
+        <div class="mini tp"><small>TP1</small><b>${s.tp1}</b><i>+${t1} pips</i></div>
+        <div class="mini tp"><small>TP2</small><b>${s.tp2}</b><i>+${t2} pips</i></div>
+        <div class="mini sl"><small>SL</small><b>${s.sl}</b><i>-${slP} pips</i></div>
+      </div>
+      <div class="note">${s.note||""}</div>
+      <div class="meta mono"><span>${s.time||""}</span><span>RR 1:${rr}</span></div>
+    </div>`;
+  }).join("");
+})();
+
+/* ---------- History ---------- */
+(function(){
+  const d = CONFIG.history;
+  const wins = d.filter(x=>x.status==="tp").length;
+  const loss = d.filter(x=>x.status==="sl").length;
+  const net = d.reduce((s,x)=>s+(x.status==="tp"?x.pips:x.status==="sl"?-x.pips:0),0);
+  const wr = (wins+loss) ? Math.round(wins/(wins+loss)*100) : 0;
+  $("stats").innerHTML = `
+    <div class="stat mono"><b class="buy">${wins}</b><small>HIT TP</small></div>
+    <div class="stat mono"><b style="color:var(--blue)">${wr}%</b><small>WIN RATE</small></div>
+    <div class="stat mono"><b class="${net>=0?"buy":"sell"}">${net>=0?"+":""}${net}</b><small>NET PIPS</small></div>`;
+  $("list").innerHTML = d.map(x=>{
+    const sign = x.status==="tp" ? "+" : x.status==="sl" ? "-" : "";
+    const pc = x.status==="tp" ? "buy" : x.status==="sl" ? "sell" : "";
+    const ic = x.status==="tp" ? "✓" : x.status==="sl" ? "✕" : "=";
+    return `
+    <div class="card h">
+      <div>
+        <div class="dt mono">${x.date}</div>
+        <div class="sd ${cls(x.side)}">${x.side.toUpperCase()}</div>
+      </div>
+      <div class="r">
+        <div class="p mono ${pc}">${sign}${x.pips}<small>PIPS</small></div>
+        <div class="chk ${x.status}">${ic}</div>
+      </div>
+    </div>`;
+  }).join("");
+})();
+
+/* ---------- Kalkulator lot ---------- */
+function calc(){
+  const bal = parseFloat($("cBal").value), r = parseFloat($("cRisk").value), sl = parseFloat($("cSl").value);
+  if(!(bal>0 && r>0 && sl>0)){ $("rUsd").textContent="-"; $("rLot").textContent="-"; return; }
+  const usd = bal*r/100;
+  const lot = usd/(sl*10);
+  $("rUsd").textContent = "$" + usd.toFixed(2);
+  $("rLot").textContent = (Math.floor(lot*100)/100).toFixed(2);
+}
+["cBal","cRisk","cSl"].forEach(i=>$(i).addEventListener("input",calc));
+calc();
+</script>
+</body>
+</html>
