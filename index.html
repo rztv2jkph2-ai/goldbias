@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GoldBias AI</title>
+<style>
+:root{
+  --bg:#050912; --card:#0b1422; --line:#17263a; --txt:#e8eef7; --mut:#6f8099;
+  --buy:#3ddc97; --sell:#ff5c6c; --blue:#5ec8ff; --gold:#e8b84a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(circle at 50% -10%,#0f2236,var(--bg) 55%);color:var(--txt);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;
+  padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+header{display:flex;align-items:center;gap:10px;padding:16px 0}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);
+  display:grid;place-items:center}
+.brand{font-weight:700;font-size:20px}.brand b{color:var(--blue)}
+.badge{margin-left:auto;border:1px solid var(--gold);color:var(--gold);border-radius:99px;
+  padding:5px 12px;font-size:11px;letter-spacing:.1em}
+.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:4px;margin:4px 0 18px}
+.tabs button{flex:1;background:none;border:0;color:var(--mut);padding:10px 0;border-radius:10px;
+  font-size:14px;font-weight:600;cursor:pointer}
+.tabs button.on{background:#13243a;color:var(--txt)}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px}
+.prio{border-color:#5a4718;background:linear-gradient(180deg,#14130f,var(--card))}
+.lbl{font-size:11px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase}
+.mut{color:var(--mut);font-size:13px}
+.big{font-size:40px;font-weight:800;margin:6px 0 2px}
+.buy{color:var(--buy)}.sell{color:var(--sell)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pill{border:1px solid #1e4766;background:#0d2236;color:var(--blue);border-radius:99px;
+  padding:6px 12px;font-size:13px}
+h2{font-size:26px;line-height:1.2;margin:12px 0 6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.mini{border:1px solid var(--line);border-radius:16px;padding:12px;background:#0a111d}
+.mini small{display:block;font-size:11px;letter-spacing:.1em;color:var(--mut);margin-bottom:6px}
+.mini b{font-size:19px}
+.sec{font-size:15px;color:var(--mut);margin:20px 4px 10px}
+.ev{display:flex;gap:14px;align-items:center;border-left:4px solid var(--mut);padding-left:14px}
+.ev.high{border-color:var(--sell)}.ev.med{border-color:var(--buy)}
+.ev .d{text-align:center;min-width:44px}.ev .d b{font-size:26px;display:block}
+.ev .d span{font-size:11px;color:var(--mut);letter-spacing:.1em}
+.ev h4{font-size:17px}.tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:12px;border-radius:8px;padding:5px 9px;border:1px solid var(--line)}
+.tag.up{background:#0d2a21;border-color:#1c5a43;color:var(--buy)}
+.tag.dn{background:#2a0f14;border-color:#5a1c26;color:var(--sell)}
+.tag.pend{background:#0a111d;color:#b9c6d8}
+
+/* Priority Signal Swing */
+.pss{border-color:#2f6f9a;background:linear-gradient(180deg,#0c1b2c,var(--card));
+  box-shadow:0 0 0 1px #0f2a40 inset}
+.pss .ttl{color:var(--blue);font-size:18px;letter-spacing:.02em;text-transform:uppercase}
+.pss .side{font-size:22px;font-weight:800;margin:6px 0 12px}
+.lv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lv .mini{text-align:center;padding:12px 4px}
+.lv .mini b{font-size:24px;display:block}
+.lv .mini i{display:block;font-style:normal;font-size:11px;margin-top:4px;color:var(--mut)}
+.lv .tp b{color:var(--buy)}.lv .sl b{color:var(--sell)}
+.pss .note{font-size:17px;margin:14px 0 12px}
+.pss .foot{border-top:1px solid var(--line);padding-top:12px;font-size:13px;color:var(--mut)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 6px;text-align:center}
+.stat b{display:block;font-size:26px}.stat small{font-size:11px;letter-spacing:.12em;color:var(--mut)}
+.h{display:flex;justify-content:space-between;align-items:center}
+.h .dt{font-size:13px;color:var(--mut)}.h .sd{font-size:22px;font-weight:800;margin-top:4px}
+.h .r{display:flex;align-items:center;gap:14px;text-align:right}
+.h .p{font-size:24px;font-weight:700}.h .p small{display:block;font-size:11px;color:var(--mut);letter-spacing:.12em}
+.chk{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#04130c}
+.chk.tp{background:var(--buy)}.chk.sl{background:var(--sell);color:#1a0508}
+footer{text-align:center;margin-top:30px;color:var(--mut);font-size:12px;line-height:1.7}
+footer b{font-size:16px;color:#9fb0c6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5ec8ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>
+  </div>
+  <div class="brand">Gold<b>Bias</b> AI</div>
+  <div class="badge mono">ULTIMATE</div>
+</header>
+
+<nav class="tabs">
+  <button class="on" data-v="signal">Signal</button>
+  <button data-v="daily">Daily</button>
+  <button data-v="swing">Swing</button>
+</nav>
+
+<!-- SIGNAL -->
+<section id="signal" class="view on">
+  <div class="card prio">
+    <div class="lbl mono">★ Ultimate — Priority</div>
+    <div style="font-weight:600;margin-top:8px">XAUUSD Direction Today</div>
+    <div class="big" id="dir"></div>
+    <div class="mut" id="dirNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <span class="mut mono">next high-impact event</span>
+      <span class="pill mono" id="cd">--</span>
+    </div>
+    <h2 id="nxName"></h2>
+    <div class="mut" id="nxDate"></div>
+    <div class="two">
+      <div class="mini"><small class="mono">AI BIAS</small><b id="nxBias"></b></div>
+      <div class="mini"><small class="mono">XAUUSD SIGNAL</small><b id="nxSig"></b></div>
+    </div>
+  </div>
+
+  <div class="sec">Upcoming economic events</div>
+  <div id="events"></div>
+
+  <div id="pssWrap">
+    <div class="sec">Priority Signal Swing</div>
+    <div class="card pss">
+      <div class="ttl mono">★ Priority Signal Swing</div>
+      <div class="side" id="pssSide"></div>
+      <div class="lv mono">
+        <div class="mini"><small>ENTRY</small><b id="pssEntry"></b></div>
+        <div class="mini tp"><small>TP</small><b id="pssTp"></b><i id="pssTpP"></i></div>
+        <div class="mini sl"><small>SL</small><b id="pssSl"></b><i id="pssSlP"></i></div>
+      </div>
+      <div class="note" id="pssNote"></div>
+      <div class="foot">Bukan signal harian — diposting saat setup berkualitas tinggi muncul.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DAILY -->
+<section id="daily" class="view">
+  <div class="sec" style="margin-top:0;color:var(--txt);font-size:18px">Daily Signal History</div>
+  <p class="mut" style="margin:0 4px 14px">Riwayat win/loss. Hanya bulan ini dan bulan lalu yang ditampilkan.</p>
+  <div class="stats" id="daily-stats"></div>
+  <div id="daily-list"></div>
+</section>
+
+<!-- SWING -->
+<section id="swing" class="view">
+  <div class="sec" style="margin-top:0;color:var(--txt);font-size:18px">Swing Signal History</div>
+  <p class="mut" style="margin:0 4px 14px">Riwayat win/loss. Hanya bulan ini dan bulan lalu yang ditampilkan.</p>
+  <div class="stats" id="swing-stats"></div>
+  <div id="swing-list"></div>
+</section>
+
+<footer>
+  <b>Gold<span style="color:var(--blue)">Bias</span> AI</b><br>
+  <span class="mono">AI-Powered News &amp; Market Analysis</span><br>
+  Output bias &amp; signal AI bukan nasihat keuangan.
+</footer>
+
+<script>
+/* ============ EDIT DATA DI SINI ============ */
+const CONFIG = {
+  direction: "SELL",                 // "BUY" atau "SELL"
+  directionNote: "H1 Trend",
+  nextEvent: {
+    name: "Federal Reserve Rate Decision",
+    date: "2026-10-29T02:00:00+08:00",
+    label: "Thursday, 29 October 2026 · 02:00 (GMT+8)",
+    bias: "Bearish USD",             // "Bearish USD" / "Bullish USD"
+    signal: "Buy"                    // "Buy" / "Sell"
+  },
+  // bias & signal boleh dikosongkan -> otomatis tampil "Forecast pending"
+  events: [
+    { day:"02", mon:"NOV", name:"ISM PMI", sub:"ISM Manufacturing PMI", impact:"med",  bias:"Bullish USD", signal:"Sell" },
+    { day:"06", mon:"NOV", name:"NFP",     sub:"Non-Farm Payrolls",     impact:"high", bias:"",            signal:"" },
+    { day:"23", mon:"DES", name:"GDP",     sub:"Final GDP (Q/Q)",       impact:"med",  bias:"",            signal:"" }
+  ],
+  // Priority Signal Swing. active:false = kartu disembunyikan
+  prioritySwing: {
+    active: true,
+    side: "BUY",                     // "BUY" atau "SELL"
+    entry: 4069,
+    tp: 4115,
+    sl: 4028,
+    note: "New Area Swing Buy - Target 500 Pips"
+  },
+  // status: "tp" (profit) atau "sl" (loss). pips selalu angka positif.
+  daily: [
+    { date:"20 Oct 2026", side:"SELL", pips:100, status:"tp" },
+    { date:"19 Oct 2026", side:"BUY",  pips:110, status:"tp" }
+  ],
+  swing: [
+    { date:"08 Oct 2026",  side:"BUY",  pips:600,  status:"tp" },
+    { date:"30 Sept 2026", side:"BUY",  pips:1000, status:"tp" },
+    { date:"22 Sept 2026", side:"BUY",  pips:400,  status:"tp" },
+    { date:"17 Sept 2026", side:"SELL", pips:1000, status:"tp" },
+    { date:"08 Sept 2026", side:"SELL", pips:400,  status:"tp" },
+    { date:"01 Sept 2026", side:"SELL", pips:500,  status:"tp" }
+  ]
+};
+/* ============================================ */
+
+const $ = id => document.getElementById(id);
+const cls = s => s.toLowerCase()==="buy" ? "buy" : "sell";
+
+// Tabs
+document.querySelectorAll(".tabs button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));
+    document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); $(b.dataset.v).classList.add("on");
+    window.scrollTo({top:0});
+  };
+});
+
+// Direction
+$("dir").textContent = CONFIG.direction;
+$("dir").className = "big " + cls(CONFIG.direction);
+$("dirNote").textContent = CONFIG.directionNote;
+
+// Next event
+const ne = CONFIG.nextEvent;
+$("nxName").textContent = ne.name;
+$("nxDate").textContent = ne.label;
+$("nxBias").textContent = ne.bias;
+$("nxBias").className = ne.bias.startsWith("Bear") ? "sell" : "buy";
+$("nxSig").textContent = ne.signal;
+$("nxSig").className = cls(ne.signal);
+
+// Countdown
+function tick(){
+  let d = new Date(ne.date) - new Date();
+  if(d<=0){ $("cd").textContent="Berlangsung / selesai"; return; }
+  const dd=Math.floor(d/864e5), hh=Math.floor(d%864e5/36e5),
+        mm=Math.floor(d%36e5/6e4), ss=Math.floor(d%6e4/1e3);
+  const p=n=>String(n).padStart(2,"0");
+  $("cd").textContent = `${dd}d ${p(hh)}h ${p(mm)}m ${p(ss)}s`;
+}
+tick(); setInterval(tick,1000);
+
+// Events (bias kosong -> "Forecast pending")
+$("events").innerHTML = CONFIG.events.map(e=>{
+  const tags = e.bias
+    ? `<span class="tag ${e.bias.startsWith("Bull")?"up":"dn"}">${e.bias.startsWith("Bull")?"▲":"▼"} ${e.bias}</span>
+       <span class="tag">XAUUSD <span class="${cls(e.signal)}">${e.signal}</span></span>`
+    : `<span class="tag pend">Forecast pending</span>`;
+  return `
+  <div class="card ev ${e.impact}">
+    <div class="d mono"><b>${e.day}</b><span>${e.mon}</span></div>
+    <div>
+      <h4>${e.name}</h4>
+      <div class="mut">${e.sub}</div>
+      <div class="tags mono">${tags}</div>
+    </div>
+  </div>`;
+}).join("");
+
+// Priority Signal Swing
+(function(){
+  const s = CONFIG.prioritySwing;
+  if(!s || !s.active){ $("pssWrap").style.display="none"; return; }
+  const dir = s.side.toUpperCase()==="BUY" ? 1 : -1;
+  const tpPips = Math.round((s.tp - s.entry) * dir * 10);   // 1 pip = 0.1 (konvensi XAUUSD)
+  const slPips = Math.round((s.entry - s.sl) * dir * 10);
+  $("pssSide").textContent = s.side.toUpperCase();
+  $("pssSide").className = "side " + cls(s.side);
+  $("pssEntry").textContent = s.entry;
+  $("pssTp").textContent = s.tp;
+  $("pssSl").textContent = s.sl;
+  $("pssTpP").textContent = "+" + tpPips + " pips";
+  $("pssSlP").textContent = "-" + slPips + " pips";
+  $("pssNote").textContent = s.note;
+})();
+
+// History + stats (win rate & net pips dihitung otomatis dari data)
+function renderHistory(key){
+  const data = CONFIG[key];
+  const wins = data.filter(x=>x.status==="tp").length;
+  const net = data.reduce((s,x)=>s+(x.status==="tp"?x.pips:-x.pips),0);
+  const wr = data.length ? Math.round(wins/data.length*100) : 0;
+  $(key+"-stats").innerHTML = `
+    <div class="stat mono"><b class="buy">${wins}</b><small>HIT TP</small></div>
+    <div class="stat mono"><b style="color:var(--blue)">${wr}%</b><small>WIN RATE</small></div>
+    <div class="stat mono"><b class="${net>=0?"buy":"sell"}">${net>=0?"+":""}${net}</b><small>NET PIPS</small></div>`;
+  $(key+"-list").innerHTML = data.map(x=>`
+    <div class="card h">
+      <div>
+        <div class="dt mono">${x.date}</div>
+        <div class="sd ${cls(x.side)}">${x.side}</div>
+      </div>
+      <div class="r">
+        <div class="p mono ${x.status==="tp"?"buy":"sell"}">${x.status==="tp"?"+":"-"}${x.pips}<small>PIPS</small></div>
+        <div class="chk ${x.status}">${x.status==="tp"?"✓":"✕"}</div>
+      </div>
+    </div>`).join("");
+}
+renderHistory("daily"); renderHistory("swing");
+</script>
+</body>
+</html>
